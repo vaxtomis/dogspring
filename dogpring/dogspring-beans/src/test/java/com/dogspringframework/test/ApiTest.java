@@ -5,11 +5,13 @@ import com.dogspringframework.beans.PropertyValues;
 import com.dogspringframework.beans.factory.config.BeanDefinition;
 import com.dogspringframework.beans.factory.config.BeanReference;
 import com.dogspringframework.beans.factory.support.DefaultListableBeanFactory;
+import com.dogspringframework.beans.factory.xml.XmlBeanDefinitionReader;
 import com.dogspringframework.test.bean.UserDao;
 import com.dogspringframework.test.bean.UserService;
 import org.junit.Test;
 
 public class ApiTest {
+
 	@Test
 	public void testBeanFactory() {
 		// 1.初始化 BeanFactory
@@ -31,4 +33,20 @@ public class ApiTest {
 		UserService userService = (UserService) beanFactory.getBean("userService");
 		userService.queryUserInfo();
 	}
+
+	@Test
+	public void testXmlLoader() {
+		// 1.初始化 BeanFactory
+		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+
+		// 2.读取配置文件&注册bean
+		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
+		reader.loadBeanDefinitions("classpath:spring.xml");
+
+		// 3.获取bean对象调用方法
+		UserService userService = (UserService) beanFactory.getBean("userService", UserService.class);
+		String result = userService.queryUserInfo();
+		System.out.println("测试结果：" + result);
+	}
+
 }
