@@ -1,2 +1,2 @@
 # dogspring
-Imitate spring for learning, but not copy.
+Simulate the Spring development process.
