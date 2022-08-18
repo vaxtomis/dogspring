@@ -22,7 +22,6 @@ import java.io.InputStream;
  * 将实际的 XML 文档读取委托给 BeanDefinitionDocumentReader 接口的实现。<br>
  * (在这里调用 XmlUtil 直接读取啦)
  *
- * @author vaxtomis
  */
 public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 
@@ -57,6 +56,13 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		ResourceLoader resourceLoader = getResourceLoader();
 		Resource resource = resourceLoader.getResource(location);
 		loadBeanDefinitions(resource);
+	}
+
+	@Override
+	public void loadBeanDefinitions(String... locations) throws BeansException {
+		for (String location : locations) {
+			loadBeanDefinitions(location);
+		}
 	}
 
 	protected void doLoadBeanDefinitions(InputStream inputStream) throws ClassNotFoundException {

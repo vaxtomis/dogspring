@@ -5,4 +5,5 @@ rootProject.children.each {project ->
 
 include 'dogspring-core'
 include 'dogspring-beans'
+include 'dogspring-context'
 

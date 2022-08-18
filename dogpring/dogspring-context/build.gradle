@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+}
+
+group 'com.wujunhao1024'
+version '0.0.1'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile project(":dogspring-beans")
+    compile project(":dogspring-core")
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}

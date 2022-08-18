@@ -8,7 +8,6 @@ import com.dogspringframework.core.io.ResourceLoader;
 /**
  * BeanDefinitionReader 简单接口。使用资源和字符串位置参数指定加载方法。
  *
- * @author vaxtomis
  */
 public interface BeanDefinitionReader {
 	BeanDefinitionRegistry getRegistry();
@@ -20,5 +19,7 @@ public interface BeanDefinitionReader {
 	void loadBeanDefinitions(Resource... resources) throws BeansException;
 
 	void loadBeanDefinitions(String location) throws BeansException;
+
+	void loadBeanDefinitions(String... locations) throws BeansException;
 
 }

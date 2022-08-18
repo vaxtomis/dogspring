@@ -9,8 +9,10 @@ import com.dogspringframework.beans.factory.ListableBeanFactory;
  * 它还提供了分析和修改 bean 定义以及预实例化单例的工具。
  * (这里没实现)
  *
- * @author vaxtomis
  */
 public interface ConfigurableListableBeanFactory extends ListableBeanFactory, AutowireCapableBeanFactory, ConfigurableBeanFactory {
+
 	BeanDefinition getBeanDefinition(String beanName) throws BeansException;
+
+	void preInstantiateSingletons() throws BeansException;
 }

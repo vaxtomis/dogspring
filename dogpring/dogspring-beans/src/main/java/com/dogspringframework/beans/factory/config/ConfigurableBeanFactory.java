@@ -8,11 +8,12 @@ import com.dogspringframework.beans.factory.HierarchicalBeanFactory;
  * 还提供了配置 bean 工厂的工具。
  * (这里没实现)
  *
- * @author vaxtomis
  */
 public interface ConfigurableBeanFactory extends HierarchicalBeanFactory, SingletonBeanRegistry {
 
 	String SCOPE_SINGLETON = "singleton";
 
 	String SCOPE_PROTOTYPE = "prototype";
+
+	void addBeanPostProcessor(BeanPostProcessor beanPostProcessor);
 }
