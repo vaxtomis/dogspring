@@ -1,7 +1,10 @@
 package com.dogspringframework.test.bean;
 
 
-public class UserService {
+import com.dogspringframework.beans.factory.DisposableBean;
+import com.dogspringframework.beans.factory.InitializingBean;
+
+public class UserService implements InitializingBean, DisposableBean {
 	private String uId;
 	private String company;
 	private String location;
@@ -9,6 +12,16 @@ public class UserService {
 
 	public String queryUserInfo() {
 		return userDao.queryUserName(uId) + "," + company + "," + location;
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		System.out.println("执行：UserService.destroy");
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		System.out.println("执行：UserService.afterPropertiesSet");
 	}
 
 	public String getuId() {

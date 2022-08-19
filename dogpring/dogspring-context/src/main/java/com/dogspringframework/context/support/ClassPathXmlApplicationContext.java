@@ -4,7 +4,7 @@ import com.dogspringframework.beans.BeansException;
 
 /**
  * <p>独立的 XML 应用程序上下文，
- * 从类路径中获取上下文定义文件，将普通路径解释为包含包路径的类路径资源名称（例如“mypackagemyresource.txt”）。
+ * 从类路径中获取上下文定义文件，将普通路径解释为包含包路径的类路径资源名称（例如 "mypackagemyresource.txt"）。
  * 对于测试工具以及嵌入在 JAR 中的应用程序上下文很有用。
  *
  */

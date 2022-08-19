@@ -2,12 +2,14 @@ package com.dogspringframework.test;
 
 import com.dogspringframework.beans.factory.support.DefaultListableBeanFactory;
 import com.dogspringframework.beans.factory.xml.XmlBeanDefinitionReader;
+import com.dogspringframework.context.support.ClassPathXmlApplicationContext;
 import com.dogspringframework.test.bean.UserService;
 import com.dogspringframework.test.common.MyBeanFactoryPostProcessor;
 import com.dogspringframework.test.common.MyBeanPostProcessor;
 import org.junit.Test;
 
 public class ApiTest {
+
 	@Test
 	public void testBeanFactoryPostProcessorAndBeanPostProcessor(){
 		// 1.初始化 BeanFactory
@@ -27,6 +29,18 @@ public class ApiTest {
 
 		// 5. 获取Bean对象调用方法
 		UserService userService = beanFactory.getBean("userService", UserService.class);
+		String result = userService.queryUserInfo();
+		System.out.println("测试结果：" + result);
+	}
+
+	@Test
+	public void testInitMethodDestroyMethod() {
+		// 1.初始化 BeanFactory
+		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+		applicationContext.registerShutdownHook();
+
+		// 2. 获取Bean对象调用方法
+		UserService userService = applicationContext.getBean("userService", UserService.class);
 		String result = userService.queryUserInfo();
 		System.out.println("测试结果：" + result);
 	}
