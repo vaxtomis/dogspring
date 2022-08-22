@@ -11,6 +11,7 @@ import com.dogspringframework.beans.factory.config.AutowireCapableBeanFactory;
 import com.dogspringframework.beans.factory.config.BeanDefinition;
 import com.dogspringframework.beans.factory.config.BeanPostProcessor;
 import com.dogspringframework.beans.factory.config.BeanReference;
+import com.dogspringframework.util.PrintUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -92,8 +93,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 	private Object initializeBean(String beanName, Object bean, BeanDefinition bd) {
 		// 1. 执行 BeanPostProcessor Before 处理
-		System.out.println("--- " + beanName + " 开始执行 initializeBean 内部逻辑 ---");
-		System.out.println("    1. BeanPostProcessor Before");
+		PrintUtils.print("--- " + beanName + " 开始执行 initializeBean 内部逻辑 ---");
+		PrintUtils.print("1. BeanPostProcessor Before", 1);
 		Object wrappedBean = applyBeanPostProcessorsBeforeInitialization(bean, beanName);
 
 		// 2. 表示 bean 的 init 方法
@@ -103,27 +104,27 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			throw new BeansException("Invocation of init method of bean[" + beanName + "] failed", e);
 		}
 
-		System.out.println("    4. 开始注册 DisposableBean");
+		PrintUtils.print("4. 开始注册 DisposableBean", 1);
 		registerDisposableBeanIfNecessary(beanName, wrappedBean, bd);
 
 		// 3. 执行 BeanPostProcessor After 处理
-		System.out.println("    5. BeanPostProcessor After");
+		PrintUtils.print("5. BeanPostProcessor After", 1);
 		wrappedBean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
 
-		System.out.println("--- " + beanName + " initializeBean 内部逻辑结束 ---");
+		PrintUtils.print("--- " + beanName + " initializeBean 内部逻辑结束 ---");
 		return wrappedBean;
 	}
 
 	private void invokeInitMethods(String beanName, Object bean, BeanDefinition bd) throws Exception {
 		// 1. 实现接口 InitializingBean
-		System.out.println("    2. 实现接口则调用 afterPropertiesSet");
+		PrintUtils.print("2. 实现接口则调用 afterPropertiesSet", 1);
 		if (bean instanceof InitializingBean) {
 			((InitializingBean) bean).afterPropertiesSet();
 		}
 
 		// 2. 配置信息 init-method {判断是为了避免二次执行销毁}
 		String initMethodName = bd.getInitMethodName();
-		System.out.println("    3. 配置自定义 init-method 则调用 " + initMethodName);
+		PrintUtils.print("3. 配置自定义 init-method 则调用 " + initMethodName, 1);
 		if (StrUtil.isNotEmpty(initMethodName)) {
 			Method initMethod = bd.getBeanClass().getMethod(initMethodName);
 			initMethod.invoke(bean);
@@ -131,7 +132,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	protected void registerDisposableBeanIfNecessary(String beanName, Object bean, BeanDefinition bd) {
-		System.out.println("    " + beanName + "-注册 DisposableBean: " + bean.toString());
+		PrintUtils.print(beanName + "-注册 DisposableBean: " + bean.toString(), 1);
 		if (bean instanceof DisposableBean || StrUtil.isNotEmpty(bd.getDestroyMethodName())) {
 			registerDisposableBean(beanName, new DisposableBeanAdapter(bean, beanName, bd));
 		}

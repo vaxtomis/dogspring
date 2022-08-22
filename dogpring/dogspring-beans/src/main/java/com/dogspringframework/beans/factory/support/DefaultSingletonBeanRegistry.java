@@ -3,6 +3,7 @@ package com.dogspringframework.beans.factory.support;
 import com.dogspringframework.beans.BeansException;
 import com.dogspringframework.beans.factory.DisposableBean;
 import com.dogspringframework.beans.factory.config.SingletonBeanRegistry;
+import com.dogspringframework.util.PrintUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 	}
 
 	public void destroySingletons() {
-		System.out.println("--- 开始执行单例销毁流程 ---");
+		PrintUtils.print("--- 开始执行单例销毁流程 ---");
 		Set<String> keySet = this.disposableBeans.keySet();
 		Object[] disposableBeanNames = keySet.toArray();
 		int count = 1;
@@ -44,12 +45,12 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 			Object beanName = disposableBeanNames[i];
 			DisposableBean disposableBean = disposableBeans.remove(beanName);
 			try {
-				System.out.println("    销毁第 " + count++ + " 个，名称为 " + beanName.toString());
+				PrintUtils.print("销毁第 " + count++ + " 个，名称为 " + beanName.toString(), 1);
 				disposableBean.destroy();
 			} catch (Exception e) {
 				throw new BeansException("Destroy method on bean with name '" + beanName + "' threw an exception", e);
 			}
 		}
-		System.out.println("--- 单例销毁流程执行完毕 ---");
+		PrintUtils.print("--- 单例销毁流程执行完毕 ---");
 	}
 }
