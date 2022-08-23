@@ -37,7 +37,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 	}
 
 	public void destroySingletons() {
-		PrintUtils.print("--- 开始执行单例销毁流程 ---");
+		PrintUtils.print(">>> 开始执行单例销毁流程 <<<");
 		Set<String> keySet = this.disposableBeans.keySet();
 		Object[] disposableBeanNames = keySet.toArray();
 		int count = 1;
@@ -45,12 +45,12 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 			Object beanName = disposableBeanNames[i];
 			DisposableBean disposableBean = disposableBeans.remove(beanName);
 			try {
-				PrintUtils.print("销毁第 " + count++ + " 个，名称为 " + beanName.toString(), 1);
+				PrintUtils.print("销毁第 " + count++ + " 个，名称为 " + beanName.toString());
 				disposableBean.destroy();
 			} catch (Exception e) {
 				throw new BeansException("Destroy method on bean with name '" + beanName + "' threw an exception", e);
 			}
 		}
-		PrintUtils.print("--- 单例销毁流程执行完毕 ---");
+		PrintUtils.print(">>> 单例销毁流程执行完毕 <<<");
 	}
 }

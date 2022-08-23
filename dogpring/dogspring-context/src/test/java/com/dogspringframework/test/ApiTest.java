@@ -34,7 +34,7 @@ public class ApiTest {
 	}
 
 	@Test
-	public void testInitMethodDestroyMethod() {
+	public void test() {
 		// 1.初始化 BeanFactory
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
 		applicationContext.registerShutdownHook();
@@ -43,5 +43,7 @@ public class ApiTest {
 		UserService userService = applicationContext.getBean("userService", UserService.class);
 		String result = userService.queryUserInfo();
 		System.out.println("测试结果：" + result);
+		System.out.println("ApplicationContextAware：" + userService.getApplicationContext());
+		System.out.println("BeanFactoryAware：" + userService.getBeanFactory());
 	}
 }

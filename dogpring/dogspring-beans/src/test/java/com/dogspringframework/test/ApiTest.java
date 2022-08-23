@@ -46,7 +46,7 @@ public class ApiTest {
 		// 3.获取bean对象调用方法
 		UserService userService = (UserService) beanFactory.getBean("userService", UserService.class);
 		String result = userService.queryUserInfo();
-		System.out.println("测试结果：" + result);
+		PrintUtils.print("测试结果：" + result);
 	}
 
 }

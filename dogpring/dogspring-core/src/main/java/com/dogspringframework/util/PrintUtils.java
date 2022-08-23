@@ -5,16 +5,24 @@ package com.dogspringframework.util;
  */
 public class PrintUtils {
 
-	private static final String TAB = "    ";
+	private static final String TAB = "|---";
 
 	private static final StringBuffer sb = new StringBuffer();
 
-	public static void print(String msg) {
-		print(msg, 0);
-	}
+	private static int deep = 0;
 
-	public static void print(String msg, int count) {
-		for (int i = 0; i < count; i++) {
+	private static int lastCount = 0;
+
+	public static void print(String msg) {
+		int count = Thread.currentThread().getStackTrace().length;
+		if (count > lastCount) {
+			deep++;
+		}
+		else if (count < lastCount) {
+			deep--;
+		}
+		lastCount = count;
+		for (int i = 0; i < deep; i++) {
 			sb.append(TAB);
 		}
 		sb.append(msg);

@@ -3,6 +3,7 @@ package com.dogspringframework.context.support;
 import com.dogspringframework.beans.BeansException;
 import com.dogspringframework.beans.factory.config.ConfigurableListableBeanFactory;
 import com.dogspringframework.beans.factory.support.DefaultListableBeanFactory;
+import com.dogspringframework.util.PrintUtils;
 
 /**
  * <p>{@link com.dogspringframework.context.ApplicationContext ApplicationContext} 实现的基类，
@@ -16,7 +17,9 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 
 	@Override
 	protected void refreshBeanFactory() throws BeansException {
+		PrintUtils.print("AC1.1 创建 DefaultListableBeanFactory");
 		DefaultListableBeanFactory beanFactory = createBeanFactory();
+		PrintUtils.print("AC1.2 加载 BeanDefinitions");
 		loadBeanDefinitions(beanFactory);
 		this.beanFactory = beanFactory;
 	}

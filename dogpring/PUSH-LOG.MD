@@ -6,7 +6,7 @@
 3. AbstractBeanFactory 继承 DefaultSingletonBeanRegistry 增加并实现通过 BD 获取 getBean 方法  
 4. AbstractAutowireCapableBeanFactory 继承 AbstractBeanFactory，引入实例化策略，增加并实现 creatBean 方法  
 5. DefaultListableBeanFactory 继承 AbstractAutowireCapableBeanFactory，增加 Map<String, BeanDefinition> 缓存  
-6. 实现基础 BeansException
+6. 实现基础 BeansException  
 ## 三、完善 AbstractAutowireCapableBeanFactory
 1. 引入 PropertyValue, PropertyValues  
 2. 引入 BeanReference (属性为基础类型时可以直接进行填充，而属性为引用类型时，此类可以通过 BeanName 逻辑引用去获取引用对象的信息)  
@@ -43,9 +43,9 @@ AbstractApplicationContext 是抽象基类，ClassPathXmlApplicationContext 是�
 方法内部首先检测是否实现了 InitializingBean 接口，如果有则直接调用 afterPropertiesSet 方法，再尝试从 BD 中获取
 initMethodName，如果能获取成功，通过反射获取 Method 并调用  
 4. destroy 方面，首先在 ConfigurableBeanFactory 定义单例 Bean 销毁方法 destroySingletons，
-并于 DefaultSingletonBeanRegistry 中实现。  
+并于 DefaultSingletonBeanRegistry 中实现  
 这里非常奇怪，因为 DefaultSingletonBeanRegistry 并没有实现 ConfigurableBeanFactory 接口，实现此接口的为它的子类，
-通过这种设计方式来隔离分层服务。  
+通过这种设计方式来隔离分层服务  
 DefaultSingletonBeanRegistry 内部新增 disposableBeans 用于缓存 DisposableBean，
 在 AbstractAutowireCapableBeanFactory 的 init 部分执行完毕后，注册 DisposableBean，
 其内部方法会检查 bean 对象是否实现 DisposableBean 接口，或是 BD 中有 destroy-method 的信息，并创建
@@ -56,3 +56,15 @@ DisposableBeanAdapter 封装信息，DisposableBeanAdapter 内部实现了 destr
 并在最外层的 AbstractApplicationContext 中实现，如测试代码所示，通过 ApplicationContext 注册钩子 close，
 实际就是 调用 DefaultSingletonBeanRegistry 内部实现的 destroySingletons 方法，批量获取注册在 disposableBeans 的对象，
 执行其 destroy 方法  
+## 七、新增标记类型 Aware 接口，用于感知容器对象
+1. 首先创建顶级接口 Aware，以及继承此接口衍生 BeanClassLoaderAware、BeanFactoryAware、BeanNameAware、ApplicationContext 等，
+我们的需求是，当 Bean 实现对应接口时，就可以获取到对应的引用，例如实现 BeanFactoryAware 时，Bean 实例就可以
+通过 getBeanFactory() 获取到其容器的引用。Bean 实例会对容器和一些服务有需求或者依赖，通过这种方式向 Bean 提供服务  
+2. 为了实现上述功能，对于 beanName、BeanFactory 和 BeanClassLoader，可以直接在 initializeBean() 方法内进行赋值。
+3. 而对于 ApplicationContext，因为我们无法在 AbstractAutowireCapableBeanFactory 内部获取到 ApplicationContext 的引用，
+我们要借助 BeanPostProcessor，也就是在 BeanPostProcessor 创建时，将 ApplicationContext 的引用存放进入，
+在 Bean 实例化过程中，会通过 BeanPostProcessor 再将内部的 ApplicationContext 引用赋给对象  
+3. 为了获取到 ApplicationContext 的引用，我们需要在 AbstractApplicationContext 的 refresh 流程中，
+通过注册 ApplicationContextAwareProcessor 保存 ApplicationContext 的引用。这样引用关系就保存在 BeanPostProcessor 中了，
+在实例化的过程中，就会调用 ApplicationContextAwareProcessor 实现的 postProcessBeforeInitialization 方法，
+注入 ApplicationContext 的引用  

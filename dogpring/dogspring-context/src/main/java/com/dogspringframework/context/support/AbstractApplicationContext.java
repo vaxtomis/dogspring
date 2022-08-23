@@ -6,6 +6,7 @@ import com.dogspringframework.beans.factory.config.BeanPostProcessor;
 import com.dogspringframework.beans.factory.config.ConfigurableListableBeanFactory;
 import com.dogspringframework.context.ConfigurableApplicationContext;
 import com.dogspringframework.core.io.DefaultResourceLoader;
+import com.dogspringframework.util.PrintUtils;
 
 import java.util.Map;
 
@@ -19,18 +20,29 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 	@Override
 	public void refresh() throws BeansException {
 		// 1. 创建 BeanFactory，并加载 BeanDefinition
+		PrintUtils.print("AC1 重刷新 BeanFactory");
 		refreshBeanFactory();
 
 		// 2. 获取 BeanFactory
+		PrintUtils.print("AC2 获取 BeanFactory");
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 
-		// 3. 在 Bean 实例化之前，执行 BeanFactoryPostProcessor (Invoke factory processors registered as beans in the context.)
+		// 3. 添加 ApplicationContextAwareProcessor，
+		// 让继承自 ApplicationContextAware 的 Bean 对象都能感知所属的 ApplicationContext
+		// AbstractBeanFactory#addBeanPostProcessor()
+		PrintUtils.print("AC3 添加 ApplicationContextAwareProcessor");
+		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
+
+		// 4. 在 Bean 实例化之前，执行 BeanFactoryPostProcessor (Invoke factory processors registered as beans in the context.)
+		PrintUtils.print("AC4 在 Bean 实例化之前，执行 BeanFactoryPostProcessor，直接修改 BD");
 		invokeBeanFactoryPostProcessors(beanFactory);
 
-		// 4. BeanPostProcessor 需要提前于其他 Bean 对象实例化之前执行注册操作
+		// 5. BeanPostProcessor 需要提前于其他 Bean 对象实例化之前执行注册操作
+		PrintUtils.print("AC5 BeanPostProcessor 在其他 Bean 对象实例化之前注册 BeanPostProcessor，注册后在实例化阶段调用");
 		registerBeanPostProcessors(beanFactory);
 
-		// 5. 提前实例化单例Bean对象
+		// 6. 提前实例化单例Bean对象
+		PrintUtils.print("AC6 提前实例化单例 Bean 对象");
 		beanFactory.preInstantiateSingletons();
 	}
 

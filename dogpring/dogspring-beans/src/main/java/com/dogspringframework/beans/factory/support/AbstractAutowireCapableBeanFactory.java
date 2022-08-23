@@ -5,8 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.dogspringframework.beans.BeansException;
 import com.dogspringframework.beans.PropertyValue;
 import com.dogspringframework.beans.PropertyValues;
-import com.dogspringframework.beans.factory.DisposableBean;
-import com.dogspringframework.beans.factory.InitializingBean;
+import com.dogspringframework.beans.factory.*;
 import com.dogspringframework.beans.factory.config.AutowireCapableBeanFactory;
 import com.dogspringframework.beans.factory.config.BeanDefinition;
 import com.dogspringframework.beans.factory.config.BeanPostProcessor;
@@ -15,12 +14,31 @@ import com.dogspringframework.util.PrintUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Set;
 
 /**
  * 继承 AbstractBeanFactory<br>
  * 此抽象类主要目的为实现 createBean 方法<br>
  * 可知 getBeanDefinition 还未实现
  *
+ * <br><br>
+ *
+ * 实现默认 bean 创建的抽象 bean 工厂超类，具有 {@link RootBeanDefinition} 类指定的全部功能。
+ * 除了 AbstractBeanFactory 的 {@link createBean} 方法外，
+ * 还实现了 {@link com.dogspringframework.beans.factory.config.AutowireCapableBeanFactory AutowireCapableBeanFactory} 接口
+ *
+ * <br><br>
+ *
+ * 提供 bean 创建（使用构造函数解析）、属性填充、连接（包括自动连接）和初始化。
+ * 处理运行时 bean 引用、解析托管集合、调用初始化方法等。
+ * 支持自动装配构造函数、按名称的属性和按类型的属性
+ *
+ * <br><br>
+ *
+ * 子类要实现的主要模板方法是{@link resolveDependency(DependencyDescriptor, String, Set , TypeConverter)}，
+ * 用于按类型自动装配。
+ * 如果工厂能够搜索其 bean 定义，匹配的 bean 通常将通过这样的搜索来实现。
+ * 对于其他工厂风格，可以实现简化的匹配算法
  */
 public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory implements AutowireCapableBeanFactory {
 
@@ -29,18 +47,24 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	@Override
 	protected Object createBean(String beanName, BeanDefinition bd, Object[] args) throws BeansException {
 		Object bean = null;
+		PrintUtils.print(">>> 开始创建 Bean: " + beanName + " <<<");
 		try {
 			// 实例化 Bean 对象
+			PrintUtils.print("1 创建 Bean 空对象");
 			bean = createBeanInstance(bd, beanName, args);
 			// 填充属性
+			PrintUtils.print("2 为 Bean 填充属性");
 			applyPropertyValues(beanName, bean, bd);
 			// 执行 Bean 的初始化方法和 BeanPostProcessor 的前置和后置处理方法
+			PrintUtils.print("3 执行 Bean 的初始化方法和 BeanPostProcessor 的前置和后置处理方法");
 			bean = initializeBean(beanName, bean, bd);
 		} catch (Exception e) {
 			throw new BeansException("Instantiation of bean failed", e);
 		}
 		// 对创建好的 bean 对象进行注册
+		PrintUtils.print("对创建好的 bean 对象进行注册");
 		addSingleton(beanName, bean);
+		PrintUtils.print(">>> 结束创建 Bean: " + beanName + " <<<");
 		return bean;
 	}
 
@@ -92,39 +116,59 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	private Object initializeBean(String beanName, Object bean, BeanDefinition bd) {
+
+		// PrintUtils.print("↓↓↓ " + beanName + " 开始执行 initializeBean 内部逻辑 ↓↓↓");
+
+		// invokeAwareMethods
+		PrintUtils.print("3.1 invokeAwareMethods 尝试识别 Aware");
+		if (bean instanceof Aware) {
+			if (bean instanceof BeanFactoryAware) {
+				PrintUtils.print("3.1.1 BeanFactoryAware 被识别，setBeanFactory");
+				((BeanFactoryAware) bean).setBeanFactory(this);
+			}
+			if (bean instanceof BeanClassLoaderAware){
+				PrintUtils.print("3.1.2 BeanClassLoaderAware 被识别，setBeanClassLoader");
+				((BeanClassLoaderAware) bean).setBeanClassLoader(getBeanClassLoader());
+			}
+			if (bean instanceof BeanNameAware) {
+				PrintUtils.print("3-1.3 BeanNameAware 被识别，setBeanName");
+				((BeanNameAware) bean).setBeanName(beanName);
+			}
+		}
+
 		// 1. 执行 BeanPostProcessor Before 处理
-		PrintUtils.print("--- " + beanName + " 开始执行 initializeBean 内部逻辑 ---");
-		PrintUtils.print("1. BeanPostProcessor Before", 1);
+		PrintUtils.print("3.2 BeanPostProcessor Before");
 		Object wrappedBean = applyBeanPostProcessorsBeforeInitialization(bean, beanName);
 
 		// 2. 表示 bean 的 init 方法
 		try {
+			PrintUtils.print("3.3 invokeInitMethods");
 			invokeInitMethods(beanName, wrappedBean, bd);
 		} catch (Exception e) {
 			throw new BeansException("Invocation of init method of bean[" + beanName + "] failed", e);
 		}
 
-		PrintUtils.print("4. 开始注册 DisposableBean", 1);
+		PrintUtils.print("3.4 开始注册 DisposableBean");
 		registerDisposableBeanIfNecessary(beanName, wrappedBean, bd);
 
 		// 3. 执行 BeanPostProcessor After 处理
-		PrintUtils.print("5. BeanPostProcessor After", 1);
+		PrintUtils.print("3.5 BeanPostProcessor After");
 		wrappedBean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
 
-		PrintUtils.print("--- " + beanName + " initializeBean 内部逻辑结束 ---");
+		// PrintUtils.print("↑↑↑ " + beanName + " initializeBean 内部逻辑结束 ↑↑↑");
 		return wrappedBean;
 	}
 
 	private void invokeInitMethods(String beanName, Object bean, BeanDefinition bd) throws Exception {
 		// 1. 实现接口 InitializingBean
-		PrintUtils.print("2. 实现接口则调用 afterPropertiesSet", 1);
+		PrintUtils.print("3.3.1 如果实现 InitializingBean 接口则调用 afterPropertiesSet");
 		if (bean instanceof InitializingBean) {
 			((InitializingBean) bean).afterPropertiesSet();
 		}
 
 		// 2. 配置信息 init-method {判断是为了避免二次执行销毁}
 		String initMethodName = bd.getInitMethodName();
-		PrintUtils.print("3. 配置自定义 init-method 则调用 " + initMethodName, 1);
+		PrintUtils.print("3.3.2 如果检测到配置自定义 init-method 则调用 " + initMethodName);
 		if (StrUtil.isNotEmpty(initMethodName)) {
 			Method initMethod = bd.getBeanClass().getMethod(initMethodName);
 			initMethod.invoke(bean);
@@ -132,7 +176,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	protected void registerDisposableBeanIfNecessary(String beanName, Object bean, BeanDefinition bd) {
-		PrintUtils.print(beanName + "-注册 DisposableBean: " + bean.toString(), 1);
+		PrintUtils.print(beanName + " 注册 DisposableBean: " + bean.toString());
 		if (bean instanceof DisposableBean || StrUtil.isNotEmpty(bd.getDestroyMethodName())) {
 			registerDisposableBean(beanName, new DisposableBeanAdapter(bean, beanName, bd));
 		}

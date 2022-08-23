@@ -4,6 +4,7 @@ import com.dogspringframework.beans.BeansException;
 import com.dogspringframework.beans.factory.config.BeanDefinition;
 import com.dogspringframework.beans.factory.config.BeanPostProcessor;
 import com.dogspringframework.beans.factory.config.ConfigurableBeanFactory;
+import com.dogspringframework.util.ClassUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +18,15 @@ import java.util.List;
  */
 public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements ConfigurableBeanFactory {
 
-	/** BeanPostProcessors to apply in createBean */
+	/**
+	 * 在 createBean 中应用的 BeanPostProcessors
+ 	 */
 	private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<BeanPostProcessor>();
+
+	/**
+	 * 如有必要，使用 ClassLoader 解析 bean 类名
+	 */
+	private ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
 
 	@Override
 	public Object getBean(String name) throws BeansException {
@@ -56,11 +64,14 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
 	}
 
 	/**
-	 * Return the list of BeanPostProcessors that will get applied
-	 * to beans created with this factory.
+	 * 返回将应用于使用此工厂创建的 bean 的 BeanPostProcessor 列表
 	 */
 	public List<BeanPostProcessor> getBeanPostProcessors() {
 		return this.beanPostProcessors;
+	}
+
+	public ClassLoader getBeanClassLoader() {
+		return this.beanClassLoader;
 	}
 
 }

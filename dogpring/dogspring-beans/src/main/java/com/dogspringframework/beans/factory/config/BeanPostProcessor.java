@@ -5,8 +5,8 @@ import com.dogspringframework.beans.BeansException;
 /**
  * BeanPostProcessor 的概念容易和 BeanFactoryPostProcessor 的概念混淆。<br>
  * 区别在于：<br>
- * BeanPostProcessor 是存在于对象实例化阶段，<br>
- * BeanFactoryPostProcessor 存在于容器启动阶段。<br>
+ * BeanPostProcessor 是存在于对象实例化阶段（实例化后修改属性值），<br>
+ * BeanFactoryPostProcessor 存在于容器启动阶段（实例化前修改 BD）。<br>
  * {@link BeanFactoryPostProcessor}
  * 调用 ConfigurableBeanFactory 的 addBeanPostProcessor() 方法
  * 注册自定义 BeanPostProcessor。

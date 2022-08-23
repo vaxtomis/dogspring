@@ -1,10 +1,17 @@
 package com.dogspringframework.test.bean;
 
 
-import com.dogspringframework.beans.factory.DisposableBean;
-import com.dogspringframework.beans.factory.InitializingBean;
+import com.dogspringframework.beans.BeansException;
+import com.dogspringframework.beans.factory.*;
+import com.dogspringframework.context.ApplicationContext;
+import com.dogspringframework.context.ApplicationContextAware;
 
-public class UserService implements InitializingBean, DisposableBean {
+public class UserService implements InitializingBean, DisposableBean, ApplicationContextAware, BeanFactoryAware, BeanNameAware, BeanClassLoaderAware {
+
+	private ApplicationContext applicationContext;
+
+	private BeanFactory beanFactory;
+
 	private String uId;
 	private String company;
 	private String location;
@@ -22,6 +29,26 @@ public class UserService implements InitializingBean, DisposableBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		System.out.println("执行：UserService.afterPropertiesSet");
+	}
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+	}
+
+	@Override
+	public void setBeanName(String name) {
+		System.out.println("Bean Name is：" + name);
+	}
+
+	@Override
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		System.out.println("ClassLoader：" + classLoader);
 	}
 
 	public String getuId() {
@@ -54,5 +81,13 @@ public class UserService implements InitializingBean, DisposableBean {
 
 	public void setUserDao(UserDao userDao) {
 		this.userDao = userDao;
+	}
+
+	public ApplicationContext getApplicationContext() {
+		return applicationContext;
+	}
+
+	public BeanFactory getBeanFactory() {
+		return beanFactory;
 	}
 }
