@@ -61,8 +61,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		} catch (Exception e) {
 			throw new BeansException("Instantiation of bean failed", e);
 		}
+
+		PrintUtils.print("4 开始注册 DisposableBean");
+		registerDisposableBeanIfNecessary(beanName, bean, bd);
+
 		// 对创建好的 bean 对象进行注册
-		PrintUtils.print("对创建好的 bean 对象进行注册");
+		PrintUtils.print("5 对创建好的 bean 对象进行注册");
 		addSingleton(beanName, bean);
 		PrintUtils.print(">>> 结束创建 Bean: " + beanName + " <<<");
 		return bean;
@@ -148,11 +152,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			throw new BeansException("Invocation of init method of bean[" + beanName + "] failed", e);
 		}
 
-		PrintUtils.print("3.4 开始注册 DisposableBean");
-		registerDisposableBeanIfNecessary(beanName, wrappedBean, bd);
-
 		// 3. 执行 BeanPostProcessor After 处理
-		PrintUtils.print("3.5 BeanPostProcessor After");
+		PrintUtils.print("3.4 BeanPostProcessor After");
 		wrappedBean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
 
 		// PrintUtils.print("↑↑↑ " + beanName + " initializeBean 内部逻辑结束 ↑↑↑");

@@ -47,7 +47,7 @@ initMethodName，如果能获取成功，通过反射获取 Method 并调用
 这里非常奇怪，因为 DefaultSingletonBeanRegistry 并没有实现 ConfigurableBeanFactory 接口，实现此接口的为它的子类，
 通过这种设计方式来隔离分层服务  
 DefaultSingletonBeanRegistry 内部新增 disposableBeans 用于缓存 DisposableBean，
-在 AbstractAutowireCapableBeanFactory 的 init 部分执行完毕后，注册 DisposableBean，
+在 AbstractAutowireCapableBeanFactory 的 initializeBean 部分执行完毕后，注册 DisposableBean，
 其内部方法会检查 bean 对象是否实现 DisposableBean 接口，或是 BD 中有 destroy-method 的信息，并创建
 DisposableBeanAdapter 封装信息，DisposableBeanAdapter 内部实现了 destroy 方法，会根据两种情况选择不同的函数：  
 如果是实现 DisposableBean 并重写 destroy 则调用 destroy  
@@ -68,3 +68,5 @@ DisposableBeanAdapter 封装信息，DisposableBeanAdapter 内部实现了 destr
 通过注册 ApplicationContextAwareProcessor 保存 ApplicationContext 的引用。这样引用关系就保存在 BeanPostProcessor 中了，
 在实例化的过程中，就会调用 ApplicationContextAwareProcessor 实现的 postProcessBeforeInitialization 方法，
 注入 ApplicationContext 的引用  
+## 更正一处错误
+AbstractAutowireCapableBeanFactory 中的 registerDisposableBeanIfNecessary 位置应该在 createBean 中，initializeBean 后  
