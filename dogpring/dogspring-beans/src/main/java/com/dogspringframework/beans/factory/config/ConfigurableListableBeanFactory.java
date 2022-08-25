@@ -14,5 +14,10 @@ public interface ConfigurableListableBeanFactory extends ListableBeanFactory, Au
 
 	BeanDefinition getBeanDefinition(String beanName) throws BeansException;
 
+	/**
+	 * 确保实例化所有非惰性初始化单例，
+	 * 同时考虑 {@link com.dogspringframework.beans.factory.FactoryBean FactoryBean}。
+	 * 如果需要，通常在工厂设置结束时调用。
+	 */
 	void preInstantiateSingletons() throws BeansException;
 }

@@ -47,7 +47,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	@Override
 	protected Object createBean(String beanName, BeanDefinition bd, Object[] args) throws BeansException {
 		Object bean = null;
-		PrintUtils.print(">>> 开始创建 Bean: " + beanName + " <<<");
+		System.out.println();
+		PrintUtils.print(">>> 开始创建 Bean: " + beanName + "; Scope: " + bd.getScope() + " <<<");
 		try {
 			// 实例化 Bean 对象
 			PrintUtils.print("1 创建 Bean 空对象");
@@ -65,10 +66,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		PrintUtils.print("4 开始注册 DisposableBean");
 		registerDisposableBeanIfNecessary(beanName, bean, bd);
 
-		// 对创建好的 bean 对象进行注册
-		PrintUtils.print("5 对创建好的 bean 对象进行注册");
-		addSingleton(beanName, bean);
-		PrintUtils.print(">>> 结束创建 Bean: " + beanName + " <<<");
+		/**
+		 * 单例模式和原型模式的区别就在于是否存放到内存中，
+		 * 如果是原型模式那么就不会存放到内存中，每次获取都重新创建对象。
+		 * 另外非 Singleton 类型的 Bean 不需要执行销毁方法
+		 */
+		// 判断 SCOPE_SINGLETON、SCOPE_PROTOTYPE，如为单例则对创建好的 bean 对象进行单例注册
+		PrintUtils.print("5 判断 Scope，如为单例则对创建好的 bean 对象进行单例注册");
+		if (bd.isSingleton()) {
+			PrintUtils.print("注册单例 bean: " + beanName);
+			addSingleton(beanName, bean);
+		}
+		PrintUtils.print(">>> 结束创建 Bean: " + beanName + "，返回: " + bean + " <<<");
 		return bean;
 	}
 
@@ -177,6 +186,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	protected void registerDisposableBeanIfNecessary(String beanName, Object bean, BeanDefinition bd) {
+		// 非 Singleton 类型的 Bean 不执行销毁方法
+		if (!bd.isSingleton()) {
+			PrintUtils.print(beanName + " 非 Singleton 类型，不执行销毁方法");
+			return;
+		}
 		PrintUtils.print(beanName + " 注册 DisposableBean: " + bean.toString());
 		if (bean instanceof DisposableBean || StrUtil.isNotEmpty(bd.getDestroyMethodName())) {
 			registerDisposableBean(beanName, new DisposableBeanAdapter(bean, beanName, bd));

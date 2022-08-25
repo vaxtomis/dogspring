@@ -70,3 +70,19 @@ DisposableBeanAdapter 封装信息，DisposableBeanAdapter 内部实现了 destr
 注入 ApplicationContext 的引用  
 ## 更正一处错误
 AbstractAutowireCapableBeanFactory 中的 registerDisposableBeanIfNecessary 位置应该在 createBean 中，initializeBean 后  
+## 八、新增 FactoryBean，支持代理接口获取原型类实例
+1. 首先新增 FactoryBean 接口，FactoryBean 顾名思义，用于生产并提供 Bean。在使用 Spring 时，我们希望能够
+通过 Factory 每次创建并获取一个独立的实例。这要求我们创建 Bean 时，要能够区分 BD 指定的 Scope 是单例还是原型。
+因此同时要在 BeanDefinition 中补充 scope 的信息，同理要在 XmlBeanDefinitionReader 中增加对 scope 的解析和获取。  
+2. 除此之外，Bean 创建流程在 AbstractAutowireCapableBeanFactory 中的 createBean 方法中完成，其中有一个单例注册逻辑，
+如果 Bean 被定义为 prototype，意味着不注册进入单例对象缓存，而是每次重新创建  
+3. Spring 通过继承的方式，单独抽离出对 FactoryBean 功能的支持。实现很简单，原本 AbstractBeanFactory 直接
+继承 DefaultSingletonBeanRegistry，此时我们在中间建立 FactoryBeanRegistrySupport 继承 DefaultSingletonBeanRegistry，
+而 AbstractBeanFactory 再继承 FactoryBeanRegistrySupport。也就是创造了一个中间过度的抽象类，这个方法被 Spring 频繁使用，
+创造了大量的中间层来满足各种可拓展性的需求
+4. FactoryBean 经过逻辑如下：FactoryBeanRegistrySupport 中的缓存主要存储由 FactoryBean 生产出且 Scope 为单例的 Bean。
+每次创建或从缓存中获取 Bean 后，通过 getObjectForBeanInstance() 方法判断其是否实现了 FactoryBean 接口，
+如果没实现，直接返回  
+如果实现，表明该 Bean 是 FactoryBean，我们还需要进一步通过 FactoryBean 获取所需的 Bean，
+于是接下来查询 FactoryBeanObjectCache 中是否存在当前 BeanName（FactoryBean 为单例时创建出所需 Bean 并缓存在内）。
+如果不存在则说明 FactoryBean 为原型，通过 FactoryBean#getObject() 方法创建新的 Bean 并返回  

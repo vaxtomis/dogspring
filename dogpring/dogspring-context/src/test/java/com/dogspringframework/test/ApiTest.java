@@ -4,9 +4,11 @@ import com.dogspringframework.beans.factory.support.DefaultListableBeanFactory;
 import com.dogspringframework.beans.factory.xml.XmlBeanDefinitionReader;
 import com.dogspringframework.context.support.ClassPathXmlApplicationContext;
 import com.dogspringframework.test.bean.UserService;
+import com.dogspringframework.test.bean.UserServiceFBT;
 import com.dogspringframework.test.common.MyBeanFactoryPostProcessor;
 import com.dogspringframework.test.common.MyBeanPostProcessor;
 import org.junit.Test;
+import org.openjdk.jol.info.ClassLayout;
 
 public class ApiTest {
 
@@ -34,7 +36,7 @@ public class ApiTest {
 	}
 
 	@Test
-	public void test() {
+	public void testCreatBeanFlow() {
 		// 1.初始化 BeanFactory
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
 		applicationContext.registerShutdownHook();
@@ -45,5 +47,24 @@ public class ApiTest {
 		System.out.println("测试结果：" + result);
 		System.out.println("ApplicationContextAware：" + userService.getApplicationContext());
 		System.out.println("BeanFactoryAware：" + userService.getBeanFactory());
+	}
+
+	@Test
+	public void testFactoryBean_prototype() {
+		// 1.初始化 BeanFactory
+		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring-factory-bean-test.xml");
+		applicationContext.registerShutdownHook();
+
+		// 2. 获取Bean对象调用方法
+		UserServiceFBT userServiceFBT1 = applicationContext.getBean("userService", UserServiceFBT.class);
+		UserServiceFBT userServiceFBT2 = applicationContext.getBean("userService", UserServiceFBT.class);
+
+		// 3. 配置 scope="prototype/singleton"
+		System.out.println(userServiceFBT1);
+		System.out.println(userServiceFBT2);
+
+		// 4. 打印十六进制哈希
+		System.out.println(userServiceFBT1 + " 十六进制哈希：" + Integer.toHexString(userServiceFBT1.hashCode()));
+		System.out.println(ClassLayout.parseInstance(userServiceFBT1).toPrintable());
 	}
 }

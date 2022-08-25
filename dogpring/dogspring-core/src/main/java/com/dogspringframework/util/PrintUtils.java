@@ -5,6 +5,8 @@ package com.dogspringframework.util;
  */
 public class PrintUtils {
 
+	private static int id = 1;
+
 	private static final String TAB = "|---";
 
 	private static final StringBuffer sb = new StringBuffer();
@@ -14,6 +16,8 @@ public class PrintUtils {
 	private static int lastCount = 0;
 
 	public static void print(String msg) {
+		sb.append(String.format("%-4s", id++));
+
 		int count = Thread.currentThread().getStackTrace().length;
 		if (count > lastCount) {
 			deep++;
@@ -26,7 +30,8 @@ public class PrintUtils {
 			sb.append(TAB);
 		}
 		sb.append(msg);
-		System.out.println(sb.toString());
+		String output = sb.toString();
+		System.out.println(output.replaceAll("com.dogspringframework.test.bean.", ""));
 		sb.setLength(0);
 	}
 }

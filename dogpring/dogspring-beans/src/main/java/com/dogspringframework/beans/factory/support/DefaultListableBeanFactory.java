@@ -6,7 +6,9 @@ import com.dogspringframework.beans.factory.config.BeanDefinition;
 import com.dogspringframework.beans.factory.config.BeanDefinitionRegistry;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 基于 bean 定义元数据的成熟 bean 工厂，可通过后处理器进行扩展<br>
@@ -59,7 +61,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 	@Override
 	public void preInstantiateSingletons() throws BeansException {
-		beanDefinitionMap.keySet().forEach(this::getBean);
+		for (Map.Entry<String, BeanDefinition> entry : beanDefinitionMap.entrySet()) {
+			if (entry.getValue().isSingleton()) {
+				this.getBean(entry.getKey());
+			}
+		}
 	}
 
 }

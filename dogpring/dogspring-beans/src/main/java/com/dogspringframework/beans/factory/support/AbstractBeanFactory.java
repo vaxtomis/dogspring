@@ -1,10 +1,12 @@
 package com.dogspringframework.beans.factory.support;
 
 import com.dogspringframework.beans.BeansException;
+import com.dogspringframework.beans.factory.FactoryBean;
 import com.dogspringframework.beans.factory.config.BeanDefinition;
 import com.dogspringframework.beans.factory.config.BeanPostProcessor;
 import com.dogspringframework.beans.factory.config.ConfigurableBeanFactory;
 import com.dogspringframework.util.ClassUtils;
+import com.dogspringframework.util.PrintUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +18,7 @@ import java.util.List;
  * 并新拓展两个抽象方法，用于获取 BeanDefinition 和 创建 Bean 对象
  *
  */
-public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements ConfigurableBeanFactory {
+public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport implements ConfigurableBeanFactory {
 
 	/**
 	 * 在 createBean 中应用的 BeanPostProcessors
@@ -44,13 +46,33 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
 	}
 
 	protected <T> T doGetBean(final String name, final Object[] args) {
-		Object bean = getSingleton(name);
-		if (bean != null) {
-			return (T) bean;
+		Object sharedInstance = getSingleton(name);
+		if (sharedInstance != null) {
+			// 如果是 FactoryBean，则需要调用 FactoryBean#getObject
+			return (T) getObjectForBeanInstance(sharedInstance, name);
 		}
 
-		BeanDefinition bd = getBeanDefinition(name);
-		return (T) createBean(name, bd, args);
+		BeanDefinition beanDefinition = getBeanDefinition(name);
+		Object bean = createBean(name, beanDefinition, args);
+		return (T) getObjectForBeanInstance(bean, name);
+	}
+
+	private Object getObjectForBeanInstance(Object beanInstance, String beanName) {
+		if (!(beanInstance instanceof FactoryBean)) {
+			PrintUtils.print(beanInstance + " 未实现 FactoryBean，直接返回创建的 Bean 实例");
+			return beanInstance;
+		}
+
+		PrintUtils.print(beanInstance + " 实现 FactoryBean，查询缓存 FactoryBeanObjectCache");
+		Object object = getCachedObjectForFactoryBean(beanName);
+
+		if (object == null) {
+			PrintUtils.print(beanName + " 不存在 FactoryBeanObjectCache 中，" + beanInstance +" 转换为 FactoryBean");
+			FactoryBean<?> factoryBean = (FactoryBean<?>) beanInstance;
+			object = getObjectFromFactoryBean(factoryBean, beanName);
+		}
+		PrintUtils.print("返回缓存中查询到或通过" + beanInstance + "创建的 Object: " + beanName);
+		return object;
 	}
 
 	protected abstract BeanDefinition getBeanDefinition(String beanName) throws BeansException;

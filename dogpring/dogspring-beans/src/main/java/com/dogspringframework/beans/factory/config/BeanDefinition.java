@@ -5,10 +5,12 @@ import com.dogspringframework.beans.PropertyValues;
 /**
  * BeanDefinition
  * 当前抽象成只包含 Class
- *
- * @author vaxtomis
  */
 public class BeanDefinition {
+
+	private final String SCOPE_SINGLETON = ConfigurableBeanFactory.SCOPE_SINGLETON;
+
+	private final String SCOPE_PROTOTYPE = ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
 	private Class beanClass;
 
@@ -24,9 +26,14 @@ public class BeanDefinition {
 	 */
 	private String destroyMethodName;
 
+	private String scope = SCOPE_SINGLETON;
+
+	private boolean singleton = true;
+
+	private boolean prototype = false;
+
 	public BeanDefinition(Class beanClass) {
-		this.beanClass = beanClass;
-		this.propertyValues = new PropertyValues();
+		this(beanClass, null);
 	}
 
 	public BeanDefinition(Class beanClass, PropertyValues propertyValues) {
@@ -36,6 +43,10 @@ public class BeanDefinition {
 
 	public void setPropertyValues(PropertyValues propertyValues) {
 		this.propertyValues = propertyValues;
+	}
+
+	public void setBeanClass(Class beanClass) {
+		this.beanClass = beanClass;
 	}
 
 	public Class getBeanClass() {
@@ -60,5 +71,23 @@ public class BeanDefinition {
 
 	public void setDestroyMethodName(String destroyMethodName) {
 		this.destroyMethodName = destroyMethodName;
+	}
+
+	public void setScope(String scope) {
+		this.scope = scope;
+		this.singleton = SCOPE_SINGLETON.equals(scope);
+		this.prototype = SCOPE_PROTOTYPE.equals(scope);
+	}
+
+	public String getScope() {
+		return scope;
+	}
+
+	public boolean isSingleton() {
+		return singleton;
+	}
+
+	public boolean isPrototype() {
+		return prototype;
 	}
 }

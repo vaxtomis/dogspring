@@ -8,6 +8,7 @@ import com.dogspringframework.beans.factory.support.DefaultListableBeanFactory;
 import com.dogspringframework.beans.factory.xml.XmlBeanDefinitionReader;
 import com.dogspringframework.test.bean.UserDao;
 import com.dogspringframework.test.bean.UserService;
+import com.dogspringframework.util.PrintUtils;
 import org.junit.Test;
 
 public class ApiTest {
